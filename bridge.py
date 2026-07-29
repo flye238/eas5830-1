@@ -2,6 +2,7 @@ from web3 import Web3
 from web3.providers.rpc import HTTPProvider
 from web3.middleware import ExtraDataToPOAMiddleware #Necessary for POA chains
 from datetime import datetime
+from pathlib import Path
 import json
 import pandas as pd
 
