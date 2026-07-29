@@ -72,13 +72,11 @@ def scan_blocks(chain, contract_info="contract_info.json"):
     print(f"Scanning blocks {start_block} - {end_block} on {chain}")
 
     if chain == 'source':
-        # Listen for Deposit events on source (Avalanche)
-        # When found, call wrap() on destination (BNB)
-        event_filter = contract.events.Deposit.create_filter(
+        # Use get_logs instead of create_filter
+        events = contract.events.Deposit.get_logs(
             from_block=start_block,
             to_block=end_block
         )
-        events = event_filter.get_all_entries()
 
         if events:
             dest_w3 = connect_to('destination')
@@ -107,13 +105,11 @@ def scan_blocks(chain, contract_info="contract_info.json"):
                 print(f"wrap() called on destination, tx hash: {tx_hash.hex()}")
 
     elif chain == 'destination':
-        # Listen for Unwrap events on destination (BNB)
-        # When found, call withdraw() on source (Avalanche)
-        event_filter = contract.events.Unwrap.create_filter(
+        # Use get_logs instead of create_filter
+        events = contract.events.Unwrap.get_logs(
             from_block=start_block,
             to_block=end_block
         )
-        events = event_filter.get_all_entries()
 
         if events:
             src_w3 = connect_to('source')
