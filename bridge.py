@@ -105,24 +105,20 @@ def scan_blocks(chain, contract_info="contract_info.json"):
                 print(f"wrap() called on destination, tx hash: {tx_hash.hex()}")
 
     elif chain == 'destination':
-        # Use get_logs instead of create_filter
+        # Use alternative BSC RPC that supports get_logs
+        bsc_w3 = Web3(Web3.HTTPProvider("https://bsc-testnet-rpc.publicnode.com"))
+        bsc_w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
+        dest_contract = bsc_w3.eth.contract(address=contract_address, abi=abi)
+
         try:
-            events = contract.events.Unwrap.get_logs(
+            events = dest_contract.events.Unwrap.get_logs(
                 from_block=start_block,
                 to_block=end_block
             )
         except Exception as e:
-            print(f"get_logs failed, trying block by block: {e}")
+            print(f"get_logs failed: {e}")
             events = []
-            for block_num in range(start_block, end_block + 1):
-                try:
-                    block_events = contract.events.Unwrap.get_logs(
-                        from_block=block_num,
-                        to_block=block_num
-                    )
-                    events.extend(block_events)
-                except Exception as e2:
-                    print(f"Error scanning block {block_num}: {e2}")
+
         if events:
             src_w3 = connect_to('source')
             src_info = get_contract_info('source', contract_info)
