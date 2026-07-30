@@ -2,6 +2,7 @@ from web3 import Web3
 from web3.providers.rpc import HTTPProvider
 from web3.middleware import ExtraDataToPOAMiddleware #Necessary for POA chains
 from datetime import datetime
+import time
 from pathlib import Path
 import json
 import pandas as pd
@@ -72,7 +73,6 @@ def scan_blocks(chain, contract_info="contract_info.json"):
     print(f"Scanning blocks {start_block} - {end_block} on {chain}")
 
     if chain == 'source':
-        # Use get_logs instead of create_filter
         events = contract.events.Deposit.get_logs(
             from_block=start_block,
             to_block=end_block
@@ -95,7 +95,7 @@ def scan_blocks(chain, contract_info="contract_info.json"):
 
                 tx = dest_contract.functions.wrap(token, recipient, amount).build_transaction({
                     'from': dest_account.address,
-                    'nonce': dest_w3.eth.get_transaction_count(dest_account.address),
+                    'nonce': dest_w3.eth.get_transaction_count(dest_account.address, 'pending'),
                     'gas': 300000,
                     'gasPrice': dest_w3.eth.gas_price,
                 })
@@ -103,6 +103,7 @@ def scan_blocks(chain, contract_info="contract_info.json"):
                 tx_hash = dest_w3.eth.send_raw_transaction(signed_tx.raw_transaction)
                 dest_w3.eth.wait_for_transaction_receipt(tx_hash)
                 print(f"wrap() called on destination, tx hash: {tx_hash.hex()}")
+                time.sleep(2)
 
     elif chain == 'destination':
         # Use alternative BSC RPC that supports get_logs
@@ -136,7 +137,7 @@ def scan_blocks(chain, contract_info="contract_info.json"):
 
                 tx = src_contract.functions.withdraw(underlying_token, recipient, amount).build_transaction({
                     'from': src_account.address,
-                    'nonce': src_w3.eth.get_transaction_count(src_account.address),
+                    'nonce': src_w3.eth.get_transaction_count(src_account.address, 'pending'),
                     'gas': 300000,
                     'gasPrice': src_w3.eth.gas_price,
                 })
@@ -144,3 +145,4 @@ def scan_blocks(chain, contract_info="contract_info.json"):
                 tx_hash = src_w3.eth.send_raw_transaction(signed_tx.raw_transaction)
                 src_w3.eth.wait_for_transaction_receipt(tx_hash)
                 print(f"withdraw() called on source, tx hash: {tx_hash.hex()}")
+                time.sleep(2)
