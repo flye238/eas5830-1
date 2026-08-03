@@ -69,7 +69,7 @@ def scan_blocks(chain, contract_info="contract_info.json"):
 
     # Scan last 5 blocks
     end_block = w3.eth.get_block_number()
-    start_block = end_block - 5
+    start_block = end_block - 20
     print(f"Scanning blocks {start_block} - {end_block} on {chain}")
 
     if chain == 'source':
